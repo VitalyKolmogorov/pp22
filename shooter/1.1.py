@@ -1,5 +1,4 @@
 from pygame import *
-from random import randint
 
 # фоновая музыка
 mixer.init()
@@ -7,12 +6,6 @@ mixer.music.load('space.ogg')
 mixer.music.play()
 fire_sound = mixer.Sound('fire.ogg')
 
-# шрифты и надписи
-font.init()
-font_statistics = font.SysFont(None, 36)
-
-score = 0  # сбито кораблей
-lost = 0  # пропущено кораблей
 
 # класс-родитель для других спрайтов
 class GameSprite(sprite.Sprite):
@@ -47,30 +40,7 @@ class Player(GameSprite):
 
     # метод "выстрел" (используем место игрока, чтобы создать там пулю)
     def fire(self):
-        bullet = Bullet("bullet.png", self.rect.centerx, self.rect.top, 15, 20, -15)
-        bullets.add(bullet)
-
-
-class Bullet(GameSprite):
-    # движение врага
-    def update(self):
-        self.rect.y += self.speed
-        # исчезает, если дойдет до края экрана
-        if self.rect.y < 0:
-            self.kill()
-
-
-# класс спрайта-врага
-class Enemy(GameSprite):
-    # движение врага
-    def update(self):
-        self.rect.y += self.speed
-        global lost
-        # исчезает, если дойдет до края экрана
-        if self.rect.y > win_height:
-            self.rect.x = randint(80, win_width - 80)
-            self.rect.y = 0
-            lost = lost + 1
+        pass  # это без реализации, т.е. мы задумали такой метод, но пока как его сделать не знаем, но он нам нужен в дальнейшем
 
 
 # Создаем окошко
@@ -83,14 +53,6 @@ background = transform.scale(image.load("galaxy.jpg"), (win_width, win_height))
 # создаем спрайты
 ship = Player("rocket.png", 5, win_height - 100, 80, 100, 10)
 
-# создаем противников
-monsters = sprite.Group()  # создаем группу в которую будем добавлять новых противников
-for i in range(1, 6):
-    monster = Enemy("ufo.png", randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
-    monsters.add(monster)
-
-bullets = sprite.Group()  # создаем группу где будут храниться все спрайты пуль
-
 # переменная "игра закончилась": как только там True, в основном цикле перестают работать спрайты
 finish = False
 # Основной цикл игры:
@@ -100,32 +62,16 @@ while run:
     for e in event.get():
         if e.type == QUIT:
             run = False
-            # событие нажатия на пробел - спрайт стреляет
-        elif e.type == KEYDOWN:
-            if e.key == K_SPACE:
-                fire_sound.play()
-                ship.fire()
 
     if not finish:
         # обновляем фон
         window.blit(background, (0, 0))
 
-        # пишем текст статистики на экране
-        text_score = font_statistics.render("Счет: " + str(score), True, (255, 255, 255))
-        window.blit(text_score, (10, 20))
-
-        text_lose = font_statistics.render("Пропущено: " + str(lost), True, (255, 255, 255))
-        window.blit(text_lose, (10, 50))
-
         # производим движения спрайтов
-        ship.update()  # изменяем координаты корабля
-        monsters.update()  # изменяем координаты всех противников в группе
-        bullets.update()  # изменяем координаты у каждой пуле в группе
+        ship.update()
 
         # обновляем их в новом местоположении при каждой итерации цикла
-        ship.reset()  # отрисовываем корабль
-        monsters.draw(window)  # отрисовываем всех противников в группе
-        bullets.draw(window)  # отрисовываем все пули в группе
+        ship.reset()
 
         display.update()
     # цикл срабатывает каждую 0.05 секунд
