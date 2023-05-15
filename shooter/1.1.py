@@ -14,7 +14,6 @@ font_statistics = font.SysFont(None, 36)
 score = 0  # сбито кораблей
 lost = 0  # пропущено кораблей
 
-
 # класс-родитель для других спрайтов
 class GameSprite(sprite.Sprite):
     # конструктор класса
@@ -48,7 +47,17 @@ class Player(GameSprite):
 
     # метод "выстрел" (используем место игрока, чтобы создать там пулю)
     def fire(self):
-        pass  # это без реализации, т.е. мы задумали такой метод, но пока как его сделать не знаем но он нам нужен в дальнейшем
+        bullet = Bullet("bullet.png", self.rect.centerx, self.rect.top, 15, 20, -15)
+        bullets.add(bullet)
+
+
+class Bullet(GameSprite):
+    # движение врага
+    def update(self):
+        self.rect.y += self.speed
+        # исчезает, если дойдет до края экрана
+        if self.rect.y < 0:
+            self.kill()
 
 
 # класс спрайта-врага
@@ -80,6 +89,8 @@ for i in range(1, 6):
     monster = Enemy("ufo.png", randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
     monsters.add(monster)
 
+bullets = sprite.Group()  # создаем группу где будут храниться все спрайты пуль
+
 # переменная "игра закончилась": как только там True, в основном цикле перестают работать спрайты
 finish = False
 # Основной цикл игры:
@@ -89,6 +100,11 @@ while run:
     for e in event.get():
         if e.type == QUIT:
             run = False
+            # событие нажатия на пробел - спрайт стреляет
+        elif e.type == KEYDOWN:
+            if e.key == K_SPACE:
+                fire_sound.play()
+                ship.fire()
 
     if not finish:
         # обновляем фон
@@ -104,10 +120,12 @@ while run:
         # производим движения спрайтов
         ship.update()  # изменяем координаты корабля
         monsters.update()  # изменяем координаты всех противников в группе
+        bullets.update()  # изменяем координаты у каждой пуле в группе
 
         # обновляем их в новом местоположении при каждой итерации цикла
         ship.reset()  # отрисовываем корабль
-        monsters.draw(window) # отрисовываем всех противников в группе
+        monsters.draw(window)  # отрисовываем всех противников в группе
+        bullets.draw(window)  # отрисовываем все пули в группе
 
         display.update()
     # цикл срабатывает каждую 0.05 секунд
