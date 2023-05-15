@@ -9,10 +9,18 @@ fire_sound = mixer.Sound('fire.ogg')
 
 # шрифты и надписи
 font.init()
+
 font_statistics = font.SysFont(None, 36)
+font_end_text = font.SysFont(None, 80)
+
+win = font_end_text.render('YOU WIN!', True, (255, 255, 255))
+lose = font_end_text.render('YOU LOSE!', True, (180, 0, 0))
 
 score = 0  # сбито кораблей
+goal = 10  # столько кораблей нужно сбить для победы
 lost = 0  # пропущено кораблей
+max_lost = 3  # проиграли, если пропустили столько
+
 
 # класс-родитель для других спрайтов
 class GameSprite(sprite.Sprite):
@@ -126,6 +134,24 @@ while run:
         ship.reset()  # отрисовываем корабль
         monsters.draw(window)  # отрисовываем всех противников в группе
         bullets.draw(window)  # отрисовываем все пули в группе
+
+        # проверка столкновения пули и монстров (и монстр, и пуля при касании исчезают)
+        collides = sprite.groupcollide(monsters, bullets, True, True)
+        for c in collides:
+            # этот цикл повторится столько раз, сколько монстров подбито
+            score = score + 1
+            monster = Enemy("ufo.png", randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
+            monsters.add(monster)
+
+        # возможный проигрыш: пропустили слишком много или герой столкнулся с врагом
+        if sprite.spritecollide(ship, monsters, False) or lost >= max_lost:
+            finish = True  # проиграли, ставим фон и больше не управляем спрайтами.
+            window.blit(lose, (200, 200))
+
+        # проверка выигрыша: сколько очков набрали?
+        if score >= goal:
+            finish = True
+            window.blit(win, (200, 200))
 
         display.update()
     # цикл срабатывает каждую 0.05 секунд
